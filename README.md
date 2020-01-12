@@ -1,68 +1,100 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
 
-In the project directory, you can run:
+/****************************************************************************/
+//A user "does something" to a component
+//this calls a local function
+//this function dispatches an action and a payload to a reducer
+//this reducer then evaluates the action type and payload and decides how the app level state should change
+//the state is re-created with the appropriate changes added and returned to the store
 
-### `npm start`
+//components are provided app level state by a provider which wraps the components in app.js
+//the provider gets the app level state from the store 
+//the store initialises and creates the app level state
+//The state in the store is then re-created via the roots reducer 
+//the root reducer is a combination of all the reducers 
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+/***************************************************************************/
+//This is the countReducer.js, in the "reducers folder"
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+//Takes in the current application state and an action
+//switch statement used for checking the incoming action types
+//then creates a new updated application level state accordingly
+function reducer (state, action) {
+  switch(action.type){
+    case "INCREMENT_COUNT":
+      return {
+        ...state,
+        count: state.count +1
+      }
+      break; 
+      case "DECREMENT_COUNT":
+        return{
+          ...state,
+          count: state.count -1
+        }
+      default: return {...state}
+      break; 
+    
+  }
+}
+/****************************************************************************************/
+//This would be the store.js file
 
-### `npm test`
+// Setting the inital state
+const INITIAL_STATE = {
+  count : 0
+}
+//creating a store for the state to live in 
+//takes in the root reducer (all reducers), inital state and middleware (not necessary in this example)
+const store= createStore(reducer, INITIAL_STATE);
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+/***************************************************************************************/
+//This is "App.js" file
 
-### `npm run build`
+function App() {                  
+  return (
+    <Provider store= {store} >
+   <Counter/>
+    </Provider>
+  );
+}
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+/***************************************************************************************/
+//This is a component in a "./components/Counter.js" file
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+function Counter() {
+  //pulling in the application level state using useSelector hook
+  //assigning it to the variable count
+  const count = useSelector(state => state.count )
+  //bringing in the dispatch hook so 
+  //we can dispatch actions to the reducer
+  const dispatch = useDispatch()
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+//function within a component which wants to change application level state
+//dispatches an action to the reducer(doesnt change anything itself directly)
+function increment(){
+  dispatch({
+    type: "INCREMENT_COUNT",
+    payload: null
+  }) 
+}
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+function decrement(){
+  dispatch({
+    type:"DECREMENT_COUNT",
+    payload: null
+  })
+  
+} 
+//The component is "provided" the application level state (from the provider, wrapped around app.js) which it gets from the store 
+//the store itself contains the state which is kept up to date by the reducer
+// {count} below is the state.count, from the store, which we initalised as 0
+return (
+    <div className= "container"> 
+    <h1>Count: {count}</h1>
+    <button onClick= {increment}>+</button>
+    <button onClick= {decrement}>-</button>
+    </div>
+    )
+};
+/****************************************************************************************/
